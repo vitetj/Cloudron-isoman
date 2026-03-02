@@ -1,0 +1,23 @@
+{
+  "id": "com.github.aloks98.isoman",
+  "title": "ISOMan",
+  "author": "aloks98",
+  "description": "Self-hosted Linux ISO download manager with real-time progress and checksum verification.",
+  "tagline": "Download, verify, and serve Linux ISOs",
+  "version": "0.3.1",
+  "healthCheckPath": "/health",
+  "httpPort": 8080,
+  "manifestVersion": 2,
+  "website": "https://github.com/aloks98/isoman",
+  "contactEmail": "support@cloudron.io",
+  "icon": "file://ui/public/favicon.svg",
+  "tags": [
+    "downloads",
+    "isos",
+    "homelab",
+    "utilities"
+  ],
+  "addons": {
+    "localstorage": {}
+  }
+}

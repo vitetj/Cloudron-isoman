@@ -13,9 +13,8 @@ WORKDIR /app/ui
 # Copy package files
 COPY ui/package.json ui/bun.lock ./
 
-# Install dependencies with cache mount
-RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --frozen-lockfile
+# Install dependencies
+RUN bun install --frozen-lockfile
 
 # Copy frontend source
 COPY ui/ ./
@@ -39,9 +38,8 @@ RUN apk add --no-cache git
 # Copy go mod files
 COPY backend/go.mod backend/go.sum ./
 
-# Download dependencies with cache mount
-RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
+# Download dependencies
+RUN go mod download
 
 # Copy backend source
 COPY backend/ ./
@@ -79,8 +77,9 @@ COPY --from=backend-builder /app/migrations ./migrations
 COPY backend/docker-entrypoint.sh /entrypoint.sh
 
 # Create data directory with proper permissions
-RUN mkdir -p /data/isos /data/db && \
-    chown -R isoman:isoman /app /data && \
+RUN mkdir -p /app/data/isos /app/data/db && \
+    sed -i 's/\r$//' /entrypoint.sh && \
+    chown -R isoman:isoman /app && \
     chmod +x /entrypoint.sh
 
 # Set entrypoint (runs as root, then drops to isoman user)
@@ -91,7 +90,7 @@ EXPOSE 8080
 
 # Environment variables
 ENV PORT=8080
-ENV DATA_DIR=/data
+ENV DATA_DIR=/app/data
 ENV WORKER_COUNT=2
 ENV GIN_MODE=release
 

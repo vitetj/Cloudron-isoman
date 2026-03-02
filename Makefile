@@ -1,4 +1,4 @@
-.PHONY: help build run stop clean test dev-backend dev-frontend docker-build docker-run docker-stop docker-clean
+.PHONY: help build clean test dev-backend dev-frontend cloudron-build cloudron-install
 
 # Default target
 help:
@@ -8,10 +8,8 @@ help:
 	@echo "  make dev-backend       - Run backend in development mode"
 	@echo "  make dev-frontend      - Run frontend in development mode"
 	@echo "  make build            - Build frontend and backend"
-	@echo "  make docker-build     - Build Docker image"
-	@echo "  make docker-run       - Run with docker-compose"
-	@echo "  make docker-stop      - Stop docker-compose"
-	@echo "  make docker-clean     - Remove Docker containers and volumes"
+	@echo "  make cloudron-build   - Build Cloudron package"
+	@echo "  make cloudron-install - Install package to Cloudron (requires CLOUDRON_LOCATION)"
 	@echo "  make clean            - Clean build artifacts"
 	@echo "  make test             - Run tests"
 
@@ -35,23 +33,15 @@ build-backend:
 	@echo "Building backend..."
 	cd backend && go build -o server .
 
-# Docker
-docker-build:
-	@echo "Building Docker image..."
-	docker build -t isoman:latest .
+# Cloudron
+cloudron-build:
+	@echo "Building Cloudron package..."
+	cloudron build
 
-docker-run:
-	@echo "Starting ISOMan with docker-compose..."
-	docker-compose up -d
-
-docker-stop:
-	@echo "Stopping ISOMan..."
-	docker-compose down
-
-docker-clean:
-	@echo "Cleaning up Docker resources..."
-	docker-compose down -v
-	docker rmi isoman:latest 2>/dev/null || true
+cloudron-install:
+	@echo "Installing Cloudron package..."
+	@test -n "$(CLOUDRON_LOCATION)" || (echo "CLOUDRON_LOCATION is required (example: isoman.example.com)" && exit 1)
+	cloudron install --location $(CLOUDRON_LOCATION)
 
 # Testing
 test:
