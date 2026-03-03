@@ -1,2 +1,17 @@
+[0.3.7]
+* Add Cloudron `ldap` addon support
+* Add optional LDAP authentication middleware (`LDAP_AUTH_ENABLED=true`) using Cloudron LDAP credentials
+* Keep static Basic auth only as fallback when LDAP auth is disabled
+
+[0.3.6]
+* Add optional HTTP Basic authentication middleware (`BASIC_AUTH_USERNAME` + `BASIC_AUTH_PASSWORD`)
+* Protect all routes except `/health` when Basic auth is enabled
+
+[0.3.5]
+* Enable Cloudron `optionalSso` in manifest so SSO mode can be activated on install/update
+* Remove proxyAuth addon (rollback to app-level auth)
+
+[Older versions removed proxyAuth entries]
+
 [0.3.1]
 * Initial release

@@ -6,7 +6,7 @@ This document lists all configurable environment variables for the Linux ISO Man
 
 | Category | Variables |
 |----------|-----------|
-| [Server](#server-configuration) | PORT, READ_TIMEOUT_SEC, WRITE_TIMEOUT_SEC, IDLE_TIMEOUT_SEC, SHUTDOWN_TIMEOUT_SEC, CORS_ORIGINS |
+| [Server](#server-configuration) | PORT, READ_TIMEOUT_SEC, WRITE_TIMEOUT_SEC, IDLE_TIMEOUT_SEC, SHUTDOWN_TIMEOUT_SEC, CORS_ORIGINS, LDAP_AUTH_ENABLED, LDAP_URL, LDAP_BIND_DN, LDAP_BIND_PASSWORD, LDAP_USERS_BASE_DN, LDAP_USER_FILTER, BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD |
 | [Database](#database-configuration) | DB_PATH, DB_BUSY_TIMEOUT_MS, DB_JOURNAL_MODE, DB_MAX_OPEN_CONNS, DB_MAX_IDLE_CONNS, DB_CONN_MAX_LIFETIME_MIN, DB_CONN_MAX_IDLE_TIME_MIN |
 | [Download](#download-configuration) | DATA_DIR, WORKER_COUNT, QUEUE_BUFFER, MAX_RETRIES, RETRY_DELAY_MS, BUFFER_SIZE, PROGRESS_UPDATE_INTERVAL_SEC, PROGRESS_PERCENT_THRESHOLD, CANCELLATION_WAIT_MS |
 | [WebSocket](#websocket-configuration) | WS_BROADCAST_SIZE |
@@ -26,12 +26,30 @@ HTTP server and network settings.
 | `IDLE_TIMEOUT_SEC` | Integer | `60` | Max wait time for next request with keep-alives | Any positive integer |
 | `SHUTDOWN_TIMEOUT_SEC` | Integer | `30` | Maximum duration to wait for graceful shutdown | Any positive integer |
 | `CORS_ORIGINS` | String | `http://localhost:3000,`<br/>`http://localhost:5173,`<br/>`http://localhost:8080` | Comma-separated list of allowed CORS origins | Any valid HTTP/HTTPS URLs |
+| `REQUIRE_PROXY_AUTH` | Boolean | `false` | Require Cloudron proxy auth headers (`X-Forwarded-User` or `X-Forwarded-Email`) for all routes except `/health` | `true`, `false` |
+| `LDAP_AUTH_ENABLED` | Boolean | `false` | Enable HTTP Basic auth against LDAP directory (Cloudron `ldap` addon) | `true`, `false` |
+| `LDAP_URL` | String | _(empty)_ | LDAP server URL | e.g. `ldap://...` or `ldaps://...` |
+| `LDAP_BIND_DN` | String | _(empty)_ | Bind DN used for searching user entries | Any valid DN |
+| `LDAP_BIND_PASSWORD` | String | _(empty)_ | Password for `LDAP_BIND_DN` | Any non-empty string |
+| `LDAP_USERS_BASE_DN` | String | _(empty)_ | Base DN for user search | Any valid DN |
+| `LDAP_USER_FILTER` | String | `(|(uid={user})(username={user})(mail={user}))` | LDAP search filter; `{user}` is replaced with login input | Any valid LDAP filter |
+| `BASIC_AUTH_USERNAME` | String | _(empty)_ | Enable HTTP Basic auth when both username and password are set | Any non-empty string |
+| `BASIC_AUTH_PASSWORD` | String | _(empty)_ | HTTP Basic auth password (used with `BASIC_AUTH_USERNAME`) | Any non-empty string |
 
 **Examples:**
 ```bash
 PORT=3000
 READ_TIMEOUT_SEC=30
 CORS_ORIGINS=https://example.com,https://app.example.com
+REQUIRE_PROXY_AUTH=false
+LDAP_AUTH_ENABLED=false
+LDAP_URL=
+LDAP_BIND_DN=
+LDAP_BIND_PASSWORD=
+LDAP_USERS_BASE_DN=
+LDAP_USER_FILTER=(|(uid={user})(username={user})(mail={user}))
+BASIC_AUTH_USERNAME=
+BASIC_AUTH_PASSWORD=
 ```
 
 ---

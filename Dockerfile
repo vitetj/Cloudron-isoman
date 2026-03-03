@@ -47,6 +47,7 @@ COPY backend/ ./
 # Build backend binary (CGO_ENABLED=0 for static binary)
 # Embed version in binary
 RUN CGO_ENABLED=0 GOOS=linux go build \
+    -mod=mod \
     -ldflags="-w -s -X main.Version=${VERSION}" \
     -o server .
 

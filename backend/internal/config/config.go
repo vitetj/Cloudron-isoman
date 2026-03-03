@@ -22,6 +22,14 @@ type Config struct {
 type ServerConfig struct {
 	Port            string
 	CORSOrigins     []string
+	BasicAuthUsername string
+	BasicAuthPassword string
+	LDAPAuthEnabled  bool
+	LDAPURL          string
+	LDAPBindDN       string
+	LDAPBindPassword string
+	LDAPUsersBaseDN  string
+	LDAPUserFilter   string
 	ReadTimeout     time.Duration
 	WriteTimeout    time.Duration
 	IdleTimeout     time.Duration
@@ -74,6 +82,18 @@ func Load() *Config {
 	v.SetDefault("IDLE_TIMEOUT_SEC", constants.DefaultIdleTimeoutSec)
 	v.SetDefault("SHUTDOWN_TIMEOUT_SEC", constants.DefaultShutdownTimeoutSec)
 	v.SetDefault("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:8080")
+	v.SetDefault("BASIC_AUTH_USERNAME", "")
+	v.SetDefault("BASIC_AUTH_PASSWORD", "")
+	v.SetDefault("LDAP_AUTH_ENABLED", false)
+	v.SetDefault("LDAP_URL", "")
+	v.SetDefault("LDAP_BIND_DN", "")
+	v.SetDefault("LDAP_BIND_PASSWORD", "")
+	v.SetDefault("LDAP_USERS_BASE_DN", "")
+	v.SetDefault("LDAP_USER_FILTER", "(|(uid={user})(username={user})(mail={user}))")
+	v.SetDefault("CLOUDRON_LDAP_URL", "")
+	v.SetDefault("CLOUDRON_LDAP_BIND_DN", "")
+	v.SetDefault("CLOUDRON_LDAP_BIND_PASSWORD", "")
+	v.SetDefault("CLOUDRON_LDAP_USERS_BASE_DN", "")
 
 	// Set defaults for Database
 	v.SetDefault("DB_PATH", "")
@@ -112,6 +132,14 @@ func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
 			Port:            v.GetString("PORT"),
+			BasicAuthUsername: v.GetString("BASIC_AUTH_USERNAME"),
+			BasicAuthPassword: v.GetString("BASIC_AUTH_PASSWORD"),
+			LDAPAuthEnabled:  v.GetBool("LDAP_AUTH_ENABLED") || v.GetString("CLOUDRON_LDAP_URL") != "",
+			LDAPURL:          coalesce(v.GetString("CLOUDRON_LDAP_URL"), v.GetString("LDAP_URL")),
+			LDAPBindDN:       coalesce(v.GetString("CLOUDRON_LDAP_BIND_DN"), v.GetString("LDAP_BIND_DN")),
+			LDAPBindPassword: coalesce(v.GetString("CLOUDRON_LDAP_BIND_PASSWORD"), v.GetString("LDAP_BIND_PASSWORD")),
+			LDAPUsersBaseDN:  coalesce(v.GetString("CLOUDRON_LDAP_USERS_BASE_DN"), v.GetString("LDAP_USERS_BASE_DN")),
+			LDAPUserFilter:   v.GetString("LDAP_USER_FILTER"),
 			ReadTimeout:     time.Duration(v.GetInt("READ_TIMEOUT_SEC")) * time.Second,
 			WriteTimeout:    time.Duration(v.GetInt("WRITE_TIMEOUT_SEC")) * time.Second,
 			IdleTimeout:     time.Duration(v.GetInt("IDLE_TIMEOUT_SEC")) * time.Second,
