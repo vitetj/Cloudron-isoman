@@ -9,7 +9,7 @@
   "httpPort": 8080,
   "manifestVersion": 2,
   "website": "https://github.com/aloks98/isoman",
-  "contactEmail": "support@cloudron.io",
+  "contactEmail": "jeremie.vitet@ixapack.com",
   "icon": "file://ui/public/favicon.svg",
   "tags": [
     "downloads",
@@ -19,5 +19,15 @@
   ],
   "addons": {
     "localstorage": {}
-  }
+  },
+  "iconUrl": "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/ui/public/favicon.svg",
+  "packagerName": "Jérémie Vitet",
+  "packagerUrl": "https://github.com/vitetj",
+  "minBoxVersion": "9.1.0",
+  "changelog": "file://CHANGELOG",
+  "postInstallMessage": "file://POSTINSTALL.md",
+  "mediaLinks": [
+    "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/screenshots/grid-view-complete.png",
+    "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/screenshots/add-iso-form.png"
+  ]
 }
