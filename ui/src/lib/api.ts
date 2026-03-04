@@ -14,6 +14,40 @@ import type { DownloadTrend, Stats } from '../types/stats';
  */
 const API_BASE_URL = import.meta.env.PUBLIC_API_URL || '';
 
+class APIRequestError extends Error {
+  status: number;
+  authChallenge: string;
+
+  constructor(message: string, status: number, authChallenge = '') {
+    super(message);
+    this.name = 'APIRequestError';
+    this.status = status;
+    this.authChallenge = authChallenge;
+  }
+}
+
+let createISOAuthorization: string | null = null;
+
+function isBasicAuthChallenge(error: unknown): error is APIRequestError {
+  return (
+    error instanceof APIRequestError &&
+    error.status === 401 &&
+    error.authChallenge.toLowerCase().includes('basic')
+  );
+}
+
+function promptCreateISOCredentials(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const username = window.prompt('LDAP username for ISO creation:');
+  if (!username) return null;
+
+  const password = window.prompt('LDAP password for ISO creation:');
+  if (!password) return null;
+
+  return `Basic ${btoa(`${username}:${password}`)}`;
+}
+
 /**
  * Generic fetch wrapper with error handling and JSON parsing
  */
@@ -24,16 +58,56 @@ async function apiFetch<T>(
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,
       },
     });
 
-    const data: APIResponse<T> = await response.json();
+    const authChallenge = response.headers.get('www-authenticate') || '';
+    const contentType = response.headers.get('content-type') || '';
+    const rawBody = await response.text();
+    const trimmedBody = rawBody.trimStart();
+    const bodyLooksHTML =
+      trimmedBody.startsWith('<!DOCTYPE') || trimmedBody.startsWith('<html');
+
+    let data: APIResponse<T> | null = null;
+    if (rawBody) {
+      if (contentType.toLowerCase().includes('application/json')) {
+        data = JSON.parse(rawBody) as APIResponse<T>;
+      } else {
+        try {
+          data = JSON.parse(rawBody) as APIResponse<T>;
+        } catch {
+          data = null;
+        }
+      }
+    }
 
     if (!response.ok) {
-      throw new Error(data.error?.message || 'An error occurred');
+      const message =
+        data?.error?.message ||
+        (response.status === 401
+          ? 'Authentication required for this action'
+          : `Request failed with status ${response.status}`);
+      throw new APIRequestError(message, response.status, authChallenge);
+    }
+
+    if (!data) {
+      if (endpoint === '/api/isos' && options?.method === 'POST') {
+        throw new APIRequestError(
+          'Authentication required for ISO creation',
+          401,
+          authChallenge || 'Basic',
+        );
+      }
+
+      if (bodyLooksHTML) {
+        throw new Error('Authentication session expired. Please refresh and retry');
+      }
+
+      throw new Error('Invalid server response format');
     }
 
     return data;
@@ -89,14 +163,55 @@ export async function getISO(id: string): Promise<ISO> {
  * Create a new ISO download
  */
 export async function createISO(request: CreateISORequest): Promise<ISO> {
-  const response = await apiFetch<ISO>('/api/isos', {
-    method: 'POST',
-    body: JSON.stringify(request),
-  });
-  if (!response.data) {
-    throw new Error('Failed to create ISO');
+  const sendCreate = async (authorization?: string): Promise<ISO> => {
+    const response = await apiFetch<ISO>('/api/isos', {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: authorization ? { Authorization: authorization } : undefined,
+    });
+
+    if (!response.data) {
+      throw new Error('Failed to create ISO');
+    }
+
+    return response.data;
+  };
+
+  try {
+    return await sendCreate(createISOAuthorization || undefined);
+  } catch (error) {
+    const canPromptForCreateAuth =
+      isBasicAuthChallenge(error) ||
+      (error instanceof Error &&
+        error.message.toLowerCase().includes('authentication required for iso creation'));
+
+    if (!canPromptForCreateAuth) {
+      throw error;
+    }
+
+    const authorization = promptCreateISOCredentials();
+    if (!authorization) {
+      throw new Error('ISO creation canceled: credentials are required');
+    }
+
+    createISOAuthorization = authorization;
+
+    try {
+      return await sendCreate(authorization);
+    } catch (retryError) {
+      if (
+        isBasicAuthChallenge(retryError) ||
+        (retryError instanceof Error &&
+          retryError.message
+            .toLowerCase()
+            .includes('authentication required for iso creation'))
+      ) {
+        createISOAuthorization = null;
+        throw new Error('Invalid LDAP credentials for ISO creation');
+      }
+      throw retryError;
+    }
   }
-  return response.data;
 }
 
 /**

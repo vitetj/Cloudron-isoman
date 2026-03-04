@@ -91,6 +91,12 @@ func TestAPIRoutes(t *testing.T) {
 			path:       "/health",
 			wantStatus: http.StatusOK,
 		},
+		{
+			name:       "GET /api/health - should be registered",
+			method:     http.MethodGet,
+			path:       "/api/health",
+			wantStatus: http.StatusOK,
+		},
 	}
 
 	for _, tt := range tests {
@@ -280,6 +286,36 @@ func TestHealthEndpoint(t *testing.T) {
 	}
 }
 
+func TestAPIHealthEndpoint(t *testing.T) {
+	env := testutil.SetupTestEnvironment(t)
+	defer env.Cleanup()
+
+	manager := download.NewManager(env.DB, env.ISODir, 1)
+	defer manager.Stop()
+	isoService := service.NewISOService(env.DB, manager, env.ISODir)
+
+	wsHub := ws.NewHub()
+	router := setupTestRouter(env, isoService, wsHub)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/health", http.NoBody)
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status %d, got %d", http.StatusOK, w.Code)
+	}
+
+	if w.Header().Get("Content-Type") != "application/json; charset=utf-8" {
+		t.Errorf("Expected JSON content type, got %s", w.Header().Get("Content-Type"))
+	}
+
+	body := w.Body.String()
+	if !testutil.StringContains(body, "status") {
+		t.Error("Expected health response to contain 'status' field")
+	}
+}
+
 func TestImagesRoute(t *testing.T) {
 	env := testutil.SetupTestEnvironment(t)
 	defer env.Cleanup()
@@ -307,4 +343,63 @@ func TestImagesRoute(t *testing.T) {
 	if !testutil.StringContains(contentType, "text/html") {
 		t.Errorf("Expected HTML content type, got %s", contentType)
 	}
+}
+
+func TestCreateISOAuthMiddleware(t *testing.T) {
+	env := testutil.SetupTestEnvironment(t)
+	defer env.Cleanup()
+
+	env.Config.Server.CreateISOAuthEnabled = true
+	env.Config.Server.BasicAuthUsername = "iso-admin"
+	env.Config.Server.BasicAuthPassword = "secret-pass"
+	env.Config.Server.LDAPAuthEnabled = false
+
+	manager := download.NewManager(env.DB, env.ISODir, 1)
+	defer manager.Stop()
+	isoService := service.NewISOService(env.DB, manager, env.ISODir)
+
+	wsHub := ws.NewHub()
+	router := setupTestRouter(env, isoService, wsHub)
+
+	t.Run("POST /api/isos without basic auth returns 401", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/api/isos", http.NoBody)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+		}
+	})
+
+	t.Run("POST /api/isos with invalid basic auth returns 401", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/api/isos", http.NoBody)
+		req.SetBasicAuth("iso-admin", "wrong")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+		}
+	})
+
+	t.Run("POST /api/isos with valid basic auth reaches handler", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/api/isos", http.NoBody)
+		req.SetBasicAuth("iso-admin", "secret-pass")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusBadRequest {
+			t.Errorf("Expected status %d, got %d", http.StatusBadRequest, w.Code)
+		}
+	})
+
+	t.Run("GET /api/isos is not protected by create ISO auth", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/isos", http.NoBody)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d", http.StatusOK, w.Code)
+		}
+	})
 }

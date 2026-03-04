@@ -1,103 +1,40 @@
-# Multi-stage Dockerfile for ISOMan
-# Stage 1: Build frontend with Bun
-# Stage 2: Build backend with Go
-# Stage 3: Create minimal runtime image
+FROM oven/bun:1 AS ui-builder
 
-# ============================================
-# Stage 1: Build Frontend
-# ============================================
-FROM oven/bun:1-alpine AS frontend-builder
+WORKDIR /build/ui
 
-WORKDIR /app/ui
+COPY ui/package.json ./
+RUN bun install
 
-# Copy package files
-COPY ui/package.json ui/bun.lock ./
-
-# Install dependencies
-RUN bun install --frozen-lockfile
-
-# Copy frontend source
 COPY ui/ ./
-
-# Build frontend
 RUN bun run build
 
-# ============================================
-# Stage 2: Build Backend
-# ============================================
-FROM golang:1.24-alpine AS backend-builder
+FROM golang:1.24 AS backend-builder
 
-# Build argument for version
 ARG VERSION=dev
 
-WORKDIR /app
+WORKDIR /build/backend
 
-# Install build dependencies
-RUN apk add --no-cache git
-
-# Copy go mod files
 COPY backend/go.mod backend/go.sum ./
-
-# Download dependencies
 RUN go mod download
 
-# Copy backend source
 COPY backend/ ./
 
-# Build backend binary (CGO_ENABLED=0 for static binary)
-# Embed version in binary
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -mod=mod \
     -ldflags="-w -s -X main.Version=${VERSION}" \
-    -o server .
+    -o /build/server .
 
-# ============================================
-# Stage 3: Runtime Image
-# ============================================
-FROM alpine:3.19
+FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c
 
-# Install ca-certificates for HTTPS downloads and su-exec for privilege dropping
-RUN apk --no-cache add ca-certificates tzdata su-exec
+WORKDIR /app/code
 
-# Create non-root user
-RUN addgroup -g 1000 isoman && \
-    adduser -D -u 1000 -G isoman isoman
+COPY --from=backend-builder /build/server /app/code/server
+COPY --from=backend-builder /build/backend/migrations /app/code/migrations
+COPY --from=ui-builder /build/ui/dist /app/code/ui/dist
+COPY start.sh /app/code/start.sh
 
-WORKDIR /app
+RUN chmod +x /app/code/start.sh
 
-# Copy backend binary from builder
-COPY --from=backend-builder /app/server ./server
-
-# Copy frontend dist from builder
-COPY --from=frontend-builder /app/ui/dist ./ui/dist
-
-# Copy migrations directory from builder
-COPY --from=backend-builder /app/migrations ./migrations
-
-# Copy entrypoint script
-COPY backend/docker-entrypoint.sh /entrypoint.sh
-
-# Create data directory with proper permissions
-RUN mkdir -p /app/data/isos /app/data/db && \
-    sed -i 's/\r$//' /entrypoint.sh && \
-    chown -R isoman:isoman /app && \
-    chmod +x /entrypoint.sh
-
-# Set entrypoint (runs as root, then drops to isoman user)
-ENTRYPOINT ["/entrypoint.sh"]
-
-# Expose port
 EXPOSE 8080
 
-# Environment variables
-ENV PORT=8080
-ENV DATA_DIR=/app/data
-ENV WORKER_COUNT=2
-ENV GIN_MODE=release
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
-
-# Run the server (passed to entrypoint)
-CMD ["./server"]
+CMD ["/app/code/start.sh"]

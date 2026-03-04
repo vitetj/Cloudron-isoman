@@ -23,6 +23,7 @@ func SetupRoutes(isoService *service.ISOService, statsService *service.StatsServ
 	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
 	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept"}
 	router.Use(cors.New(corsConfig))
+	router.Use(createISOAuthMiddleware(cfg))
 
 	// Create handlers
 	handlers := NewHandlers(isoService, isoDir)
@@ -38,6 +39,9 @@ func SetupRoutes(isoService *service.ISOService, statsService *service.StatsServ
 		api.PUT("/isos/:id", handlers.UpdateISO)
 		api.DELETE("/isos/:id", handlers.DeleteISO)
 		api.POST("/isos/:id/retry", handlers.RetryISO)
+
+		// Health check (Cloudron-friendly)
+		api.GET("/health", handlers.HealthCheck)
 
 		// Statistics
 		api.GET("/stats", statsHandlers.GetStats)

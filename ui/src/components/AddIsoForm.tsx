@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -89,6 +90,9 @@ export function AddIsoForm({ onSubmit }: AddIsoFormProps) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add New ISO Download</DialogTitle>
+          <DialogDescription className="sr-only">
+            Create a new ISO download by filling the required metadata and URL.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -4,14 +4,13 @@
   "author": "aloks98",
   "description": "Self-hosted Linux ISO download manager with real-time progress and checksum verification.",
   "tagline": "Download, verify, and serve Linux ISOs",
-  "version": "0.3.7",
-  "healthCheckPath": "/health",
+  "version": "0.3.8",
+  "healthCheckPath": "/api/health",
   "httpPort": 8080,
   "manifestVersion": 2,
-  "optionalSso": true,
   "website": "https://github.com/aloks98/isoman",
   "contactEmail": "jeremie.vitet@ixapack.com",
-  "icon": "file://ui/public/favicon.svg",
+  "icon": "file://appicon.png",
   "tags": [
     "downloads",
     "isos",
@@ -20,12 +19,13 @@
   ],
   "addons": {
     "localstorage": {},
-    "ldap": {}
+    "ldap": {},
+    "proxyAuth": {}
   },
-  "iconUrl": "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/ui/public/favicon.svg",
+  "iconUrl": "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/appicon.png",
   "packagerName": "Jérémie Vitet",
   "packagerUrl": "https://github.com/vitetj",
-  "minBoxVersion": "9.1.0",
+  "minBoxVersion": "8.3.0",
   "changelog": "file://CHANGELOG",
   "postInstallMessage": "file://POSTINSTALL.md",
   "mediaLinks": [

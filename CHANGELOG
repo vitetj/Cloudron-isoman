@@ -1,3 +1,11 @@
+[0.3.8]
+* Add Cloudron `proxyAuth` + `ldap` addon alignment in packaging manifest
+* Keep health check on `/api/health` and Cloudron runtime entrypoint on `start.sh`
+* Add create-only authentication middleware (`POST /api/isos`) with LDAP-first behavior and Basic fallback
+* Improve frontend handling for auth-challenged/non-JSON create responses
+* Add create-flow credential prompt support and dialog accessibility fix
+* Translate and refresh deployment/documentation content to English
+
 [0.3.7]
 * Add Cloudron `ldap` addon support
 * Add optional LDAP authentication middleware (`LDAP_AUTH_ENABLED=true`) using Cloudron LDAP credentials

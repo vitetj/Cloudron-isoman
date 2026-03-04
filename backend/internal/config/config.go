@@ -22,6 +22,8 @@ type Config struct {
 type ServerConfig struct {
 	Port            string
 	CORSOrigins     []string
+	RequireProxyAuth bool
+	CreateISOAuthEnabled bool
 	BasicAuthUsername string
 	BasicAuthPassword string
 	LDAPAuthEnabled  bool
@@ -82,6 +84,8 @@ func Load() *Config {
 	v.SetDefault("IDLE_TIMEOUT_SEC", constants.DefaultIdleTimeoutSec)
 	v.SetDefault("SHUTDOWN_TIMEOUT_SEC", constants.DefaultShutdownTimeoutSec)
 	v.SetDefault("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:8080")
+	v.SetDefault("REQUIRE_PROXY_AUTH", false)
+	v.SetDefault("CREATE_ISO_AUTH_ENABLED", false)
 	v.SetDefault("BASIC_AUTH_USERNAME", "")
 	v.SetDefault("BASIC_AUTH_PASSWORD", "")
 	v.SetDefault("LDAP_AUTH_ENABLED", false)
@@ -132,6 +136,8 @@ func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
 			Port:            v.GetString("PORT"),
+			RequireProxyAuth: v.GetBool("REQUIRE_PROXY_AUTH"),
+			CreateISOAuthEnabled: v.GetBool("CREATE_ISO_AUTH_ENABLED"),
 			BasicAuthUsername: v.GetString("BASIC_AUTH_USERNAME"),
 			BasicAuthPassword: v.GetString("BASIC_AUTH_PASSWORD"),
 			LDAPAuthEnabled:  v.GetBool("LDAP_AUTH_ENABLED") || v.GetString("CLOUDRON_LDAP_URL") != "",

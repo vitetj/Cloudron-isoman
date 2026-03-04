@@ -1,44 +1,4 @@
 {
-    "stable": true,
-    "versions": {
-        "0.3.1": {
-            "manifest": {
-                "id": "com.github.aloks98.isoman",
-                "title": "ISOMan",
-                "author": "aloks98",
-                "description": "Self-hosted Linux ISO download manager with real-time progress and checksum verification.",
-                "tagline": "Download, verify, and serve Linux ISOs",
-                "version": "0.3.1",
-                "healthCheckPath": "/health",
-                "httpPort": 8080,
-                "manifestVersion": 2,
-                "website": "https://github.com/aloks98/isoman",
-                "contactEmail": "jeremie.vitet@ixapack.com",
-                "icon": "file://ui/public/favicon.svg",
-                "tags": [
-                    "downloads",
-                    "isos",
-                    "homelab",
-                    "utilities"
-                ],
-                "addons": {
-                    "localstorage": {}
-                },
-                "iconUrl": "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/ui/public/favicon.svg",
-                "packagerName": "Jérémie Vitet",
-                "packagerUrl": "https://github.com/vitetj",
-                "minBoxVersion": "9.1.0",
-                "changelog": "* Initial release\n",
-                "postInstallMessage": "ISOMan is now installed.\n\nQuick start:\n\n1. Open the app and add your first ISO download URL.\n2. Optionally provide a checksum URL for verification.\n3. Access downloaded files from the `/images/` browser.\n\nRuntime data is stored in `/app/data` via Cloudron local storage.\n",
-                "mediaLinks": [
-                    "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/screenshots/grid-view-complete.png",
-                    "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/screenshots/add-iso-form.png"
-                ],
-                "dockerImage": "docker.io/vitetj/isoman:20260302-135455-295974984"
-            },
-            "creationDate": "Tue, 03 Mar 2026 06:58:10 GMT",
-            "ts": "Tue, 03 Mar 2026 06:58:10 GMT",
-            "publishState": "published"
-        }
-    }
+  "stable": true,
+  "versions": {}
 }
