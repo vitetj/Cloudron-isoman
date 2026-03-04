@@ -1,4 +1,46 @@
 {
-  "stable": true,
-  "versions": {}
+    "stable": true,
+    "versions": {
+        "0.3.8": {
+            "manifest": {
+                "id": "com.github.aloks98.isoman",
+                "title": "ISOMan",
+                "author": "aloks98",
+                "description": "Self-hosted Linux ISO download manager with real-time progress and checksum verification.",
+                "tagline": "Download, verify, and serve Linux ISOs",
+                "version": "0.3.8",
+                "healthCheckPath": "/api/health",
+                "httpPort": 8080,
+                "manifestVersion": 2,
+                "website": "https://github.com/aloks98/isoman",
+                "contactEmail": "jeremie.vitet@ixapack.com",
+                "icon": "file://appicon.png",
+                "tags": [
+                    "downloads",
+                    "isos",
+                    "homelab",
+                    "utilities"
+                ],
+                "addons": {
+                    "localstorage": {},
+                    "ldap": {},
+                    "proxyAuth": {}
+                },
+                "iconUrl": "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/appicon.png",
+                "packagerName": "Jérémie Vitet",
+                "packagerUrl": "https://github.com/vitetj",
+                "minBoxVersion": "9.1.0",
+                "changelog": "* Add Cloudron `proxyAuth` + `ldap` addon alignment in packaging manifest\n* Keep health check on `/api/health` and Cloudron runtime entrypoint on `start.sh`\n* Add create-only authentication middleware (`POST /api/isos`) with LDAP-first behavior and Basic fallback\n* Improve frontend handling for auth-challenged/non-JSON create responses\n* Add create-flow credential prompt support and dialog accessibility fix\n* Translate and refresh deployment/documentation content to English\n",
+                "postInstallMessage": "ISOMan is now installed.\n\nQuick start:\n\n1. Open the app and add your first ISO download URL.\n2. Optionally provide a checksum URL for verification.\n3. Access downloaded files from the `/images/` browser.\n\nRuntime data is stored in `/app/data` via Cloudron local storage.\n",
+                "mediaLinks": [
+                    "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/screenshots/grid-view-complete.png",
+                    "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/screenshots/add-iso-form.png"
+                ],
+                "dockerImage": "docker.io/vitetj/isoman:20260304-093501-71296fe24"
+            },
+            "creationDate": "Wed, 04 Mar 2026 09:37:54 GMT",
+            "ts": "Wed, 04 Mar 2026 09:37:54 GMT",
+            "publishState": "published"
+        }
+    }
 }

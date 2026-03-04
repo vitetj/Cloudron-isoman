@@ -25,7 +25,7 @@
   "iconUrl": "https://raw.githubusercontent.com/vitetj/Cloudron-isoman/master/appicon.png",
   "packagerName": "Jérémie Vitet",
   "packagerUrl": "https://github.com/vitetj",
-  "minBoxVersion": "8.3.0",
+  "minBoxVersion": "9.1.0",
   "changelog": "file://CHANGELOG",
   "postInstallMessage": "file://POSTINSTALL.md",
   "mediaLinks": [
